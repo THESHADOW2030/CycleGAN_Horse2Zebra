@@ -13,7 +13,7 @@ from torchvision.utils import save_image
 from time import time
 from torch.utils.tensorboard import SummaryWriter
 
-def train_fn(discHorse, discZebra, genHorse, genZebra, loader, optDiscriminator, optGenerator, l1, mse, dScalar, gScalar):
+def train_fn(discHorse, discZebra, genHorse, genZebra, loader, optDiscriminator, optGenerator, l1, mse, dScalar, gScalar, epoch):
     
     loop = tqdm(loader, leave=True)
     writer = SummaryWriter("./runs")
@@ -40,7 +40,7 @@ def train_fn(discHorse, discZebra, genHorse, genZebra, loader, optDiscriminator,
             discFakeZebraOutput = discZebra(fakeZebra.detach())
 
             discRealZebraLoss = mse(discRealZebraOutput, torch.ones_like(discRealZebraOutput))
-            discFakeZebraLoss = mse(discFakeZebraOutput, torch.ones_like(discFakeZebraOutput))
+            discFakeZebraLoss = mse(discFakeZebraOutput, torch.zeros_like(discFakeZebraOutput))
 
             discZebraLoss = discFakeZebraLoss + discRealZebraLoss
 
@@ -93,7 +93,7 @@ def train_fn(discHorse, discZebra, genHorse, genZebra, loader, optDiscriminator,
         writer.add_scalars("Generator Loss", {"Generator": ganLoss}, global_step=step)
         step += 1
         
-        loop.set_postfix(
+        loop.set_postfix(epoch = epoch,
             D_H = discHorseLoss.item(),
             D_Z = discZebraLoss.item(),
             G = ganLoss.item()
@@ -148,7 +148,7 @@ def main():
 
 
     for epoch in range(config.NUM_EPOCHS):
-        train_fn(discHorse, discZebra, genHorse, genZebra, trainLoader, optDiscriminator, optGenerator, L1, MSE, dScalar, gScalar)
+        train_fn(discHorse, discZebra, genHorse, genZebra, trainLoader, optDiscriminator, optGenerator, L1, MSE, dScalar, gScalar, epoch)
 
         if config.SAVE_MODEL:
             save_checkpoint(genHorse, optGenerator, filename=config.CHECKPOINT_GEN_H)
