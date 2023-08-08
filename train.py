@@ -93,7 +93,8 @@ def train_fn(discHorse, discZebra, genHorse, genZebra, loader, optDiscriminator,
         writer.add_scalars("Generator Loss", {"Generator": ganLoss}, global_step=step)
         step += 1
         
-        loop.set_postfix(epoch = epoch,
+        loop.set_postfix(
+            epoch = epoch,
             D_H = discHorseLoss.item(),
             D_Z = discZebraLoss.item(),
             G = ganLoss.item()
