@@ -11,11 +11,13 @@ import os
 import config
 from torchvision.utils import save_image
 from time import time
+from torch.utils.tensorboard import SummaryWriter
 
 def train_fn(discHorse, discZebra, genHorse, genZebra, loader, optDiscriminator, optGenerator, l1, mse, dScalar, gScalar):
     
     loop = tqdm(loader, leave=True)
-
+    writer = SummaryWriter("./runs")
+    step = 0
     for idx, (zebra, horse) in enumerate(loop):
         zebra = zebra.to(config.DEVICE)
         horse = horse.to(config.DEVICE)
@@ -87,7 +89,10 @@ def train_fn(discHorse, discZebra, genHorse, genZebra, loader, optDiscriminator,
             save_image(fakeHorse * 0.5 + 0.5, f"./results/{time()}_horse_{idx}.png")
             save_image(fakeZebra * 0.5 + 0.5, f"./results/{time()}_zebra_{idx}.png")
             
-
+        writer.add_scalars("Discriminator Loss", {"Horse": discHorseLoss, "Zebra": discZebraLoss}, global_step=step)
+        writer.add_scalars("Generator Loss", {"Generator": ganLoss}, global_step=step)
+        step += 1
+        
         loop.set_postfix(
             D_H = discHorseLoss.item(),
             D_Z = discZebraLoss.item(),
